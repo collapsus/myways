@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Мои дороги.</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://api-maps.yandex.ru/1.1/index.xml?key=AAnVqEsBAAAABnmYCQMACwekwFr8HXNtF1SPSdeUrFoTDIIAAAAAAAAAAAAxO7BTvO93GAnD3XvAasaglG1p6g==" type="text/javascript"></script>
+    <script type="text/javascript">
+        // Создание обработчика для события window.onLoad
+        YMaps.jQuery(function () {
+            // Создание экземпляра карты и его привязка к созданному контейнеру
+            var map = new YMaps.Map(YMaps.jQuery("#YMapsID")[0]);
+
+            // Установка для карты ее центра и масштаба
+            map.setCenter(new YMaps.GeoPoint(39.625163,47.222421), 16);
+
+            //Добавление элементов управления
+            var typeControl = new YMaps.TypeControl([YMaps.MapType.MAP, YMaps.MapType.SATELLITE, YMaps.MapType.HYBRID], [0,1,2]);
+            map.addControl(typeControl);
+            map.addControl(new YMaps.ToolBar());
+            map.addControl(new YMaps.Zoom());
+            map.addControl(new YMaps.MiniMap());
+            map.addControl(new YMaps.ScaleLine());
+
+            // Создание стиля для многоугольника
+            var s = new YMaps.Style();
+            s.lineStyle = new YMaps.LineStyle();
+            s.lineStyle.strokeColor = 'FF000055';
+            s.lineStyle.strokeWidth = '5';
+            YMaps.Styles.add("example#CustomLine", s);
+
+            // Создание закодированной ломаной http://api.yandex.ru/maps/jsapi/examples/mappolylineencodepoints.html
+            // Получение координат точки http://api.yandex.ru/maps/jsapi/examples/mapeventsarguments.html
+
+            // Создание группы объектов и добавление ее на карту
+            var home = createPlacemark(new YMaps.GeoPoint(39.625163,47.222421), 'Дом', 'Ростов-на-Дону, ул. Благодатная, дом 166 а, кв. 36', {style: "default#houseIcon"});
+            var group = new YMaps.GeoObjectCollection();
+            group.add(createWayAndPlace('Путь до университета',
+
+                    [
+                        createPolyline("NaJcAriO0AIQAAAA7v7__0AEAABj____FQAAALj-__9gAAAACvT__8EAAAC_____QAAAAB_7__8MAQAAv____8sAAABg____LAEAALD___9sAQAAFQAAABYBAAArAAAAYwIAALD-__8=", "AAAAAAAAAAAAA",
+                        {
+                            hasHint: 1,
+                            hasBalloon: 1,
+                            style: "example#CustomLine"
+                        }, '', 'путь от дома до университета'),
+
+                        createPlacemark(new YMaps.GeoPoint(39.628487,47.216558), 'Университет', 'Ростов-на-Дону, ул. Мильчакова, дом 8а')
+                    ]
+                    ));
+
+            group.add(createWayAndPlace('Путь до бывшей работы',
+
+                    [
+                        createPolyline("NaJcAlKO0AIVAAAAoAIAAH7-___j____av___4IGAADh-P__6QAAAAAAAAA6AAAAtRUAAMb___8YAgAAff___-0BAAAl____RxMAADPa__-rAAAAS_b__xEwAADc_v__ZzAAAJr9__9HNwAA1f3___sZAACgAAAAXxUAACQBAACGEgAA_wEAAOIIAABmAgAA6RsAAF0LAABDAgAAF____7EEAADbAAAAKv___14BAAB3-f__CP___5L9__8VAQAAt_n__0EFAAB-_v__HQAAAF7-__-______v3__3QBAABb_P__QQAAAJH8__90BQAAwvn__70EAAAM-f__MgMAADYIAADoBwAArgkAAKcDAAACAgAA8QEAAKn-__8dAAAAvf3___AFAABn_f__mv___w==", "AAAAAAAAAAAAA",
+                        {
+                            hasHint: 1,
+                            hasBalloon: 1,
+                            style: "example#CustomLine"
+                        }, '', 'путь от дома до бывшей работы'),
+
+                        createPlacemark(new YMaps.GeoPoint(39.694271,47.225884), 'экс работа', 'Ростов-на-Дону, пер. Доломановский, дом 55')
+                    ]
+                    ));
+
+            group.add(createWayAndPlace('Путь до Томыного дома',
+
+                    [
+                        createPolyline("NaJcAlKO0AIVAAAAoAIAAH7-___j____av___4IGAADh-P__6QAAAAAAAAA6AAAAtRUAAMb___8YAgAAff___-0BAAAl____RxMAADPa__-rAAAAS_b__xEwAADc_v__ZzAAAJr9__9HNwAA1f3___sZAACgAAAAXxUAACQBAACGEgAA_wEAAOIIAABmAgAA6RsAAF0LAABDAgAAF____7EEAADbAAAAKv___14BAAB3-f__CP___5L9__8VAQAAt_n__0EFAAB-_v__HQAAAF7-__-_____6P3__8wBAABiQgAAMA4AAB0iAAD3BgAAE_7__yX___9oAgAAF_r__6kCAAAm-v__pfv__-P-__9N-v__sP7__7X___8X____5AIAAAX7__9jAgAA6Pr__2MJAADX6___fgYAAETy__8-BgAA5fL__0YEAADO9___nQwAAN7n__-QEgAAd93__xMEAACh-P__CAQAAG74___7BwAAFvH__6kGAACS8____AQAAM32__-KBAAA2vf__x0DAAC89___DP7__zH3__-H-v__kPj__4L6__9H-f__RPz__w35___K____OPn__zQAAAA4-f__lP7__2b8__87_P__mvz__7b4__8O-___Xv7__6H9__-V____i_3__2AAAABC-___7AAAADr6__92AAAAUPz__64CAAAq8f__ywAAAA4AAABXAQAAOvr__4UDAAB1AAAA", "AAAAAAAAAAAAA",
+                        {
+                            hasHint: 1,
+                            hasBalloon: 1,
+                            style: "example#CustomLine"
+                        }, '', 'путь до Томыного дома'),
+
+                        createPlacemark(new YMaps.GeoPoint(39.739797,47.145413), 'дом Томы', 'Батайск, ул. Фрунзе, дом 147')
+                    ]
+                    ));
+
+            group.add(createWayAndPlace('Путь до бабушки',
+
+                    [
+                        createPolyline("NaJcAlqN0AIwBAAAff___0AAAACw_v__QAAAAAPu___r____afT__1cBAADj____KgAAAB7-__96CgAASQAAAGsAAAAX-___iwcAACsAAAAqAAAA3fj__w==", "AAAAAAAAAAAAA",
+                        {
+                            hasHint: 1,
+                            hasBalloon: 1,
+                            style: "example#CustomLine"
+                        }, '', 'путь до бабушки'),
+
+                        createPlacemark(new YMaps.GeoPoint(39.631808,47.210616), 'дом бабушки', 'Ростов-на-Дону, ул. Стачки, дом 215')
+                    ]
+                    ));
+
+            map.addOverlay(home);
+
+            // Создание управляющего элемента "Путеводитель по местам"
+            map.addControl(new PlaceNavigator(group, home));
+        });
+
+        function createWayAndPlace (name, objects) {
+            var wayAndPlace = new YMaps.GeoObjectCollection();
+            wayAndPlace.name = name;
+            wayAndPlace.add(objects);
+            return wayAndPlace;
+        };
+
+        // Функия создания метки
+        function createPlacemark (geoPoint, name, description, options) {
+            var placemark = new YMaps.Placemark(geoPoint, options);
+            placemark.name = name;
+            placemark.description = description;
+
+            return placemark;
+        }
+
+        // Функия создания ломанной
+        function createPolyline (codedGeoPoints, levels, options, name, description) {
+            var polyline = new YMaps.Polyline.fromEncodedPoints(codedGeoPoints, levels, options);
+            polyline.name = name;
+            polyline.description = description;
+            polyline.bounds = new YMaps.GeoCollectionBounds([
+                polyline.getPoint(0),
+                polyline.getPoint(polyline.getNumPoints() - 1)
+            ]);
+
+            return polyline;
+        }
+
+        function changePlace(objectType){
+
+        };
+
+        // Управляющий элемент "Путеводитель по местам", реализиует интерфейс YMaps.IControl
+        function PlaceNavigator (places, home) {
+            this.home = home;
+            // Добавление на карту
+            this.onAddToMap = function (map, position) {
+                    this.container = YMaps.jQuery("<div><input type='button' value='Домой!' class='home-button' /> <select><option disabled selected>Выберите путь</option></select></div>")
+                    this.map = map;
+                    this.position = position || new YMaps.ControlPosition(YMaps.ControlPosition.TOP_LEFT, new YMaps.Size(150, 5));
+
+                    // Выставление необходимых CSS-свойств
+                    this.container.css({
+                        position: "absolute",
+                        zIndex: YMaps.ZIndex.CONTROL,
+                        background: '#eee',
+                        listStyle: 'none',
+                        padding: '10px',
+                        margin: 0
+                    });
+                    this.select = this.container.find("select");
+                    this.homeButton = this.container.find("input");
+
+                    // Формирование списка мест
+                    this._generateList();
+
+                    // Применение позиции к управляющему элементу
+                    this.position.apply(this.container);
+
+                    // Добавление на карту
+                    this.container.appendTo(this.map.getContainer());
+            }
+
+            // Удаление с карты
+            this.onRemoveFromMap = function () {
+                this.container.remove();
+                this.container = this.map = null;
+            };
+
+            // Пока "летим" игнорируем клики по ссылкам
+            this.isFlying = 0;
+
+            // Формирование списка мест
+            this._generateList = function () {
+                var _this = this;
+                _this.objects = {};
+
+                // Для каждого объекта вызываем функцию-обработчик
+                places.forEach(function (obj) {
+                    // Создание ссылки на объект
+                    var op = YMaps.jQuery("<option>" + obj.name + "</option>");
+                    _this.objects[obj.name] = obj;
+                    // Добавление пункта списка для объекта в общий список
+                    op.appendTo(_this.select);
+                });
+
+                //Функция удаления всех оверлэев из группы wayAndPlace
+                function remover(){
+                    for (var obj in _this.objects) {
+                        _this.map.removeOverlay(_this.objects[obj]._objects);
+                    };
+                };
+
+                //функция для обработчика
+                function mover (obj) {
+                    var isItPlace = obj instanceof YMaps.Placemark;
+                    remover();
+                    if (!isItPlace) {_this.map.addOverlay(obj)}
+                    if (!_this.isFlying) {
+                        _this.isFlying = 1;
+                        _this.map.panTo(isItPlace ? obj.getGeoPoint() : obj[0].bounds.getCenter(), {
+                            flying: 1,
+                            callback: function () {
+                                isItPlace ? obj.openBalloon() : obj[1].openBalloon();
+                                _this.isFlying = 0;
+                                if (isItPlace) {
+                                    _this.map.setZoom(15)
+                                } else {
+                                    _this.map.setBounds(obj[0].bounds);
+                                    _this.map.setZoom(_this.map.getZoom() - 1);
+                                }
+                            }
+                        });
+                    };
+                    return false;
+                };
+
+                //Создание обработчика нажатия homeButton
+                _this.homeButton.click(function(){
+                    mover(_this.home);
+                });
+
+                // Создание обработчика изменения select-а
+                _this.select.change(function () {
+                    var currentObjSet = _this.objects[this.value]._objects;
+                    mover(currentObjSet);
+                });
+
+            };
+        }
+    </script>
+</head>
+
+<body>
+    <div id="YMapsID" style="width:600px;height:400px"></div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+application: ymapswidget
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /
+  static_files: ymapsmyways.html
+  upload: ymapsmyways.html
