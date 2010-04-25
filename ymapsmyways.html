@@ -8,7 +8,12 @@
         // Создание обработчика для события window.onLoad
         YMaps.jQuery(function () {
             // Создание экземпляра карты и его привязка к созданному контейнеру
-            var map = new YMaps.Map(YMaps.jQuery("#YMapsID")[0]);
+            var map = new YMaps.Map(YMaps.jQuery("#YMapsID")[0], {ignoreResize: false});
+
+            YMaps.jQuery("#YMapsID").height(YMaps.jQuery(window).height() - 20);
+            YMaps.jQuery(window).resize(function(){
+                YMaps.jQuery("#YMapsID").height(YMaps.jQuery(window).height() - 20);
+            });
 
             // Установка для карты ее центра и масштаба
             map.setCenter(new YMaps.GeoPoint(39.625163,47.222421), 16);
@@ -32,8 +37,11 @@
             // Получение координат точки http://api.yandex.ru/maps/jsapi/examples/mapeventsarguments.html
 
             // Создание группы объектов и добавление ее на карту
-            var home = createPlacemark(new YMaps.GeoPoint(39.625163,47.222421), 'Дом', 'Ростов-на-Дону, ул. Благодатная, дом 166 а, кв. 36', {style: "default#houseIcon"});
+//            var home = createPlacemark(new YMaps.GeoPoint(39.625163,47.222421), 'Дом', 'Ростов-на-Дону, ул. Благодатная, дом 166 а, кв. 36', {style: "default#houseIcon"});
             var group = new YMaps.GeoObjectCollection();
+
+            group.add(createPlacemark(new YMaps.GeoPoint(39.625163,47.222421), 'Дом', 'Ростов-на-Дону, ул. Благодатная, дом 166 а, кв. 36', {style: "default#houseIcon"}));
+
             group.add(createWayAndPlace('Путь до университета',
 
                     [
@@ -90,10 +98,10 @@
                     ]
                     ));
 
-            map.addOverlay(home);
+            map.addOverlay(group._objects[0]);
 
             // Создание управляющего элемента "Путеводитель по местам"
-            map.addControl(new PlaceNavigator(group, home));
+            map.addControl(new Navigator(group));
         });
 
         function createWayAndPlace (name, objects) {
@@ -129,108 +137,63 @@
 
         };
 
-        // Управляющий элемент "Путеводитель по местам", реализиует интерфейс YMaps.IControl
-        function PlaceNavigator (places, home) {
-            this.home = home;
-            // Добавление на карту
-            this.onAddToMap = function (map, position) {
-                    this.container = YMaps.jQuery("<div><input type='button' value='Домой!' class='home-button' /> <select><option disabled selected>Выберите путь</option></select></div>")
-                    this.map = map;
-                    this.position = position || new YMaps.ControlPosition(YMaps.ControlPosition.TOP_LEFT, new YMaps.Size(150, 5));
-
-                    // Выставление необходимых CSS-свойств
-                    this.container.css({
-                        position: "absolute",
-                        zIndex: YMaps.ZIndex.CONTROL,
-                        background: '#eee',
-                        listStyle: 'none',
-                        padding: '10px',
-                        margin: 0
-                    });
-                    this.select = this.container.find("select");
-                    this.homeButton = this.container.find("input");
-
-                    // Формирование списка мест
-                    this._generateList();
-
-                    // Применение позиции к управляющему элементу
-                    this.position.apply(this.container);
-
-                    // Добавление на карту
-                    this.container.appendTo(this.map.getContainer());
-            }
-
-            // Удаление с карты
-            this.onRemoveFromMap = function () {
-                this.container.remove();
-                this.container = this.map = null;
-            };
-
+        // Управляющий элемент
+        function Navigator (places) {
+            this.listbox = new YMaps.ListBox({caption: "Мои дороги", width: 250});
+            this.toolbar = new YMaps.ToolBar(this.listbox);
             // Пока "летим" игнорируем клики по ссылкам
             this.isFlying = 0;
 
-            // Формирование списка мест
-            this._generateList = function () {
-                var _this = this;
-                _this.objects = {};
-
-                // Для каждого объекта вызываем функцию-обработчик
-                places.forEach(function (obj) {
-                    // Создание ссылки на объект
-                    var op = YMaps.jQuery("<option>" + obj.name + "</option>");
-                    _this.objects[obj.name] = obj;
-                    // Добавление пункта списка для объекта в общий список
-                    op.appendTo(_this.select);
-                });
-
-                //Функция удаления всех оверлэев из группы wayAndPlace
-                function remover(){
-                    for (var obj in _this.objects) {
-                        _this.map.removeOverlay(_this.objects[obj]._objects);
-                    };
+            var _this = this;
+            // Для каждого объекта вызываем функцию-обработчик
+            //Функция удаления всех оверлэев из группы wayAndPlace
+            function remover(map){
+                for (var obj in places._objects) {
+                    if (!(places._objects[obj] instanceof YMaps.Placemark)) {
+                        map.removeOverlay(places._objects[obj]);
+                    }
                 };
+            };
 
-                //функция для обработчика
-                function mover (obj) {
+            places.forEach(function (obj) {
+                // Создание ссылки на объект
+                var li = new YMaps.ListBoxItem( obj.name );
+
+                // Создание обработчика щелчка по ссылке
+                YMaps.Events.observe(li, li.Events.Click, function () {
                     var isItPlace = obj instanceof YMaps.Placemark;
-                    remover();
-                    if (!isItPlace) {_this.map.addOverlay(obj)}
-                    if (!_this.isFlying) {
+                    var currentMap = _this.listbox.__toolBar.getMap();
+                    remover(currentMap);
+                    if (!isItPlace) {currentMap.addOverlay(obj)};
+                    if (!_this.isFlying &&
+                            currentMap.getCenter().__lat.toFixed(7) != (isItPlace ? obj.getGeoPoint().__lat.toFixed(7) : obj._objects[0].bounds.getCenter().__lat.toFixed(7)) &&
+                            currentMap.getCenter().__lng.toFixed(7) != (isItPlace ? obj.getGeoPoint().__lng.toFixed(7) : obj._objects[0].bounds.getCenter().__lng.toFixed(7))) { // т.к. расхождение идёт после 7-го знака после зяпятой (хотя неизвестно почему)
                         _this.isFlying = 1;
-                        _this.map.panTo(isItPlace ? obj.getGeoPoint() : obj[0].bounds.getCenter(), {
+                        currentMap.panTo((isItPlace ? obj.getGeoPoint() : obj._objects[0].bounds.getCenter()), {
                             flying: 1,
                             callback: function () {
-                                isItPlace ? obj.openBalloon() : obj[1].openBalloon();
+                                isItPlace ? obj.openBalloon() : obj._objects[1].openBalloon();
                                 _this.isFlying = 0;
                                 if (isItPlace) {
-                                    _this.map.setZoom(15)
+                                    currentMap.setZoom(15)
                                 } else {
-                                    _this.map.setBounds(obj[0].bounds);
-                                    _this.map.setZoom(_this.map.getZoom() - 1);
+                                    currentMap.setBounds(obj._objects[0].bounds); // для масштабирования
+                                    currentMap.setZoom(currentMap.getZoom() - 1);
                                 }
                             }
                         });
                     };
-                    return false;
-                };
+                }, _this.listbox);
 
-                //Создание обработчика нажатия homeButton
-                _this.homeButton.click(function(){
-                    mover(_this.home);
-                });
-
-                // Создание обработчика изменения select-а
-                _this.select.change(function () {
-                    var currentObjSet = _this.objects[this.value]._objects;
-                    mover(currentObjSet);
-                });
-
-            };
+                _this.listbox.add(li);
+            });
+            return this.toolbar;
         }
+
     </script>
 </head>
 
 <body>
-    <div id="YMapsID" style="width:600px;height:400px"></div>
+    <div id="YMapsID" style="width: 100%; height:400px"></div>
 </body>
 </html>
