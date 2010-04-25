@@ -101,7 +101,7 @@
             map.addOverlay(group._objects[0]);
 
             // Создание управляющего элемента "Путеводитель по местам"
-            map.addControl(new Navigator(group));
+            map.addControl(new Navigator(group), new YMaps.ControlPosition(YMaps.ControlPosition.TOP_RIGHT, new YMaps.Point(125, 5)));
         });
 
         function createWayAndPlace (name, objects) {
